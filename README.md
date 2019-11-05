@@ -1,2 +1,2 @@
 # cooccurance-learning
-Learning visual co-occurrence  
+Learning weak prior for visual search using co-occurance statistics. Contains experiments for downstream tasks. 
