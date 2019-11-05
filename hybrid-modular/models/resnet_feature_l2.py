@@ -111,6 +111,10 @@ class ResNet_l2(nn.Module):
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4 = self._make_layer(block, 512, layers[3], stride=last_stride)
+        #----------- Auxillary layers ---------------------------------#
+        self.layer3_aux = self._make_layer(block, 256, layers[2], stride=2)
+        self.layer4_aux = self._make_layer(block, 512, layers[3], stride=last_stride)
+        
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         
         self.use_fc = use_fc
@@ -199,8 +203,8 @@ class ResNet_l2(nn.Module):
         return x
     
     def top_antisymm(self, x):
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.layer3_aux(x)
+        x = self.layer4_aux(x)
         x = self.global_avgpool(x)
         x = x.view(x.size(0), -1)
         return x
