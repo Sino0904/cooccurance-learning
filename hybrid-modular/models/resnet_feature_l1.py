@@ -108,13 +108,15 @@ class ResNet_l1(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=last_stride)
-        #----------- Auxillary layers ---------------------------------#
-        self.layer2_aux = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3_aux = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4_aux = self._make_layer(block, 512, layers[3], stride=last_stride)
+        self.layer2_symm = self._make_layer(block, 128, layers[1], stride=2)
+        self.inplanes = 256
+        self.layer2_antisymm = self._make_layer(block, 128, layers[1], stride=2)
+        self.layer3_symm = self._make_layer(block, 256, layers[2], stride=2)
+        self.inplanes = 512
+        self.layer3_antisymm = self._make_layer(block, 256, layers[2], stride=2)
+        self.layer4_symm = self._make_layer(block, 512, layers[3], stride=last_stride)
+        self.inplanes = 1024
+        self.layer4_antisymm = self._make_layer(block, 512, layers[3], stride=last_stride)
         
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         
@@ -196,25 +198,27 @@ class ResNet_l1(nn.Module):
         return x
     
     def top_symm(self, x):
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x = self.layer2_symm(x)
+        x = self.layer3_symm(x)
+        x = self.layer4_symm(x)
         x = self.global_avgpool(x)
         x = x.view(x.size(0), -1)
         return x
     
     def top_antisymm(self, x):
-        x = self.layer2_aux(x)
-        x = self.layer3_aux(x)
-        x = self.layer4_aux(x)
+        x = self.layer2_antisymm(x)
+        x = self.layer3_antisymm(x)
+        x = self.layer4_antisymm(x)
         x = self.global_avgpool(x)
         x = x.view(x.size(0), -1)
         return x
 
     def forward(self, x):
         f = self.featuremaps_base(x)
-        v_symm = self.top_symm(f)
-        v_antisymm = self.top_antisymm(f)
+        f_symm = f.clone()
+        f_antisymm = f.clone()
+        v_symm = self.top_symm(f_symm)
+        v_antisymm = self.top_antisymm(f_antisymm)
         
         return v_symm, v_antisymm
 
