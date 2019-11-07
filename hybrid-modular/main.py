@@ -70,8 +70,10 @@ def main():
         models_learning = {'classifier':{'symm':symm_classifier_model, 'antisymm': antisymm_classifier_model}, 'feature': feature_model}
             
         # define loss function (criterion)
+        #criterion_train_symm = nn.MultiLabelSoftMarginLoss()
+        #criterion_train_antisymm = MultiLabelSoftmaxLoss()
         criterion_train_symm = nn.MultiLabelSoftMarginLoss()
-        criterion_train_antisymm = MultiLabelSoftmaxLoss()
+        criterion_train_antisymm = nn.MultiLabelSoftMarginLoss()
         criterion_val = nn.CrossEntropyLoss()
         criterions_learning = {'train':{'symm':criterion_train_symm, 'antisymm': criterion_train_antisymm}, 'eval': criterion_val}
        
