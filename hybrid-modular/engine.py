@@ -577,7 +577,7 @@ class SymmetricMultiLabelHNHEngine(HNHMultiClassEngine):
             target_var_antisymm = torch.autograd.Variable(self.state['target_antisymm']).float()
             self.state['loss_symm'] = criterions['train']['symm'](output_symm, target_var_symm)
             self.state['loss_antisymm'] = criterions['train']['antisymm'](output_antisymm, target_var_antisymm)
-            self.state['loss'] = 0.1*self.state['loss_symm'] + 0.9*self.state['loss_antisymm']
+            self.state['loss'] = 0.01*self.state['loss_symm'] + self.state['loss_antisymm']
             
         else:
             output_antisymm = models['classifier']['antisymm'](output_feature_antisymm)

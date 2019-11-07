@@ -112,7 +112,7 @@ class ResNet_l3(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4_symm = self._make_layer(block, 512, layers[3], stride=last_stride)
         self.inplanes = 1024
-        self.layer4_antisymm = self._make_layer(block, 512, layers[3], stride=last_stride)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=last_stride)
         
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         
@@ -202,7 +202,7 @@ class ResNet_l3(nn.Module):
         return x
     
     def top_antisymm(self, x):
-        x = self.layer4_antisymm(x)
+        x = self.layer4(x)
         x = self.global_avgpool(x)
         x = x.view(x.size(0), -1)
         return x

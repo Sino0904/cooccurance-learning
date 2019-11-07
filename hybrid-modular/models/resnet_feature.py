@@ -201,7 +201,7 @@ class ResNet(nn.Module):
         if self.use_fc:
             v = self.fc(v)
         
-        return v
+        return v,v
 
 
 
