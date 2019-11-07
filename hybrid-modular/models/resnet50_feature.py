@@ -2,9 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 
 from models.resnet_feature import *
-#from models.resnet_feature_l1 import *
+from models.resnet_feature_l1 import *
 from models.resnet_feature_l2 import *
-#from models.resnet_feature_l3 import *
+from models.resnet_feature_l3 import *
 
 __all__ = ['resnet50_feature']
 
