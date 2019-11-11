@@ -7,6 +7,8 @@ from torch.nn import functional as F
 import torchvision
 import torch.utils.model_zoo as model_zoo
 
+from layers.ModulatedAttLayer import ModulatedAttLayer
+
 
 __all__ = ['resnet50']
 
@@ -106,6 +108,7 @@ class ResNet(nn.Module):
     """
     def __init__(self, num_classes, block, layers,
                  last_stride=2,
+                 use_modulatedatt=False,
                  fc_dims=None,
                  dropout_p=None,
                  **kwargs):
@@ -126,6 +129,11 @@ class ResNet(nn.Module):
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.fc = self._construct_fc_layer(fc_dims, 512 * block.expansion, dropout_p)
         self.classifier = nn.Linear(self.feature_dim, num_classes)
+        
+        self.use_modulatedatt = use_modulatedatt
+        if self.use_modulatedatt:
+            print('Using self attention.')
+            self.modulatedatt = ModulatedAttLayer(in_channels=512*block.expansion)
 
         self._init_params()
 
@@ -203,6 +211,12 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         f = self.featuremaps(x)
+        
+        if self.use_modulatedatt:
+            x, feature_maps = self.modulatedatt(x)
+        else:
+            feature_maps = None
+        
         v = self.global_avgpool(f)
         v = v.view(v.size(0), -1)
         
@@ -243,8 +257,9 @@ def init_pretrained_weights_symm(model, model_symm):
     print('Freezing feature weights except for asymmetric fc.')
     for param_name, param in model.named_parameters():
         # Freeze all parameters except self attention parameters
-        if 'classifier' not in param_name:
-            param.requires_grad = False
+        for layer_name in ['classifier','modulatedatt']
+            if layer_name not in param_name:
+                param.requires_grad = False
     print("Initialized model with pretrained weights from {}".format(model_symm))
 
 
@@ -265,6 +280,7 @@ def resnet50(num_classes, pretrained='imagenet',model_load=None, **kwargs):
         block=Bottleneck,
         layers=[3, 4, 6, 3],
         last_stride=2,
+        use_modulatedatt=False,
         fc_dims=None,
         dropout_p=None,
         **kwargs
