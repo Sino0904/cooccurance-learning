@@ -1,6 +1,9 @@
 
 #ORIGINAL CODE: https://github.com/zhmiao/OpenLongTailRecognition-OLTR/blob/master/layers/ModulatedAttLayer.py
 
+from __future__ import absolute_import
+from __future__ import division
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -69,7 +72,7 @@ class ModulatedAttLayer(nn.Module):
         # channel_att = channel_att.softmax(dim=1)
 
         spatial_att = self.fc_spatial(x_flatten)
-        spatial_att = spatial_att.softmax(dim=1)
+        spatial_att = F.softmax(spatial_att, dim=1)
 
         # selector = self.fc_selector(x_flatten)
         # selector = selector.sigmoid()

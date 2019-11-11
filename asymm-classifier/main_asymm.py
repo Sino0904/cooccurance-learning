@@ -57,9 +57,9 @@ def main():
             
         print("Initializing model: {}".format(args.arch))
         if args.pretrained:
-            model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = 'symmetric',model_load=args.load_symm, use_gpu=use_gpu)
+            model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = 'symmetric', model_load=args.load_symm, use_selfatt=True, use_gpu=use_gpu)
         else:
-            model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = None,model_load=args.load_symm, use_gpu=use_gpu)
+            model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = None,model_load=args.load_symm, use_selfatt=True, use_gpu=use_gpu)
         print("Model size: {:.3f} M".format(count_num_param(model)))
             
         # define loss function (criterion)
@@ -89,7 +89,7 @@ def main():
         test_dataset = DatasetLoader_HNH(args.data, img_set='test_cleaned', annotation=os.path.join('/srv/data1/ashishsingh/Half_and_Half_Data/I2L/annotation', 'i2l_testset_annotation.json'))
         
         print("Initializing model: {}".format(args.arch))
-        model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = None,model_load=args.load_symm,use_gpu=use_gpu)
+        model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = None,model_load=args.load_symm,  use_selfatt=True, use_gpu=use_gpu)
         criterion_test = nn.CrossEntropyLoss()
         engine = SymmetricMultiLabelHNHEngine(state)
         engine.test(model, criterion_test, test_dataset)

@@ -7,7 +7,7 @@ from torch.nn import functional as F
 import torchvision
 import torch.utils.model_zoo as model_zoo
 
-from layers.ModulatedAttLayer import ModulatedAttLayer
+from .ModulatedAttLayer import ModulatedAttLayer
 
 
 __all__ = ['resnet50']
@@ -128,12 +128,19 @@ class ResNet(nn.Module):
         
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.fc = self._construct_fc_layer(fc_dims, 512 * block.expansion, dropout_p)
-        self.classifier = nn.Linear(self.feature_dim, num_classes)
-        
+
         self.use_modulatedatt = use_modulatedatt
         if self.use_modulatedatt:
             print('Using self attention.')
             self.modulatedatt = ModulatedAttLayer(in_channels=512*block.expansion)
+
+
+        self.classifier = nn.Linear(self.feature_dim, num_classes)
+        
+        #self.use_modulatedatt = use_modulatedatt
+        #if self.use_modulatedatt:
+            #print('Using self attention.')
+            #self.modulatedatt = ModulatedAttLayer(in_channels=512*block.expansion)
 
         self._init_params()
 
@@ -213,7 +220,7 @@ class ResNet(nn.Module):
         f = self.featuremaps(x)
         
         if self.use_modulatedatt:
-            x, feature_maps = self.modulatedatt(x)
+            f, feature_maps = self.modulatedatt(f)
         else:
             feature_maps = None
         
@@ -257,9 +264,8 @@ def init_pretrained_weights_symm(model, model_symm):
     print('Freezing feature weights except for asymmetric fc.')
     for param_name, param in model.named_parameters():
         # Freeze all parameters except self attention parameters
-        for layer_name in ['classifier','modulatedatt']
-            if layer_name not in param_name:
-                param.requires_grad = False
+        if 'classifier' not in param_name and 'modulatedatt' not in param_name:
+            param.requires_grad = False
     print("Initialized model with pretrained weights from {}".format(model_symm))
 
 
@@ -274,13 +280,13 @@ resnet152: block=Bottleneck, layers=[3, 8, 36, 3]
 """
 
 
-def resnet50(num_classes, pretrained='imagenet',model_load=None, **kwargs):
+def resnet50(num_classes, pretrained='imagenet',model_load=None,use_selfatt=False, **kwargs):
     model = ResNet(
         num_classes=num_classes,
         block=Bottleneck,
         layers=[3, 4, 6, 3],
         last_stride=2,
-        use_modulatedatt=False,
+        use_modulatedatt=use_selfatt,
         fc_dims=None,
         dropout_p=None,
         **kwargs
