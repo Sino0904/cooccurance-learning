@@ -76,7 +76,7 @@ def cv_to_pil(cv_img):
     return cv_img_pil
     
 def get_model():
-    model = models.init_model(name=args.arch, num_classes=len(CLASSES), pretrained = None, use_selfatt=False, use_gpu=True)
+    model = models.init_model(name=args.arch, num_classes=len(CLASSES), pretrained = None, use_gpu=True)
     model = model.cuda()
     print("Model size: {:.3f} M".format(count_num_param(model)))
     assert os.path.isfile(args.model), 'Error: no directory found!'

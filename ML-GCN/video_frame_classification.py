@@ -34,10 +34,6 @@ from PIL import Image
 import sys
 import cv2
 
-from os import listdir
-from os.path import isfile, join
-
-
 CLASSES = ['airplane', 'apple', 'backpack', 'banana', 'baseball bat', 'baseball glove', 'bear', 'bed', 'bench', 'bicycle', 'bird', 'boat', 'book', 'bottle', 'bowl', 'broccoli', 'bus', 'cake', 'car', 'carrot', 'cat', 'cell phone', 'chair', 'clock', 'couch', 'cow', 'cup', 'dining table', 'dog', 'donut', 'elephant', 'fire hydrant', 'fork', 'frisbee', 'giraffe', 'hair drier', 'handbag', 'horse', 'hot dog', 'keyboard', 'kite', 'knife', 'laptop', 'microwave', 'motorcycle', 'mouse', 'orange', 'oven', 'parking meter', 'pizza', 'potted plant', 'refrigerator', 'remote', 'sandwich', 'scissors', 'sheep', 'sink', 'skateboard', 'skis', 'snowboard', 'spoon', 'sports ball', 'stop sign', 'suitcase', 'surfboard', 'teddy bear', 'tennis racket', 'tie', 'toaster', 'toilet', 'toothbrush', 'traffic light', 'train', 'truck', 'tv', 'umbrella', 'vase', 'wine glass', 'zebra']
 
 
@@ -132,28 +128,25 @@ def main():
     model = get_model()
     
     video_folderpath = args.video
-    video_name_list = [f for f in listdir(video_folderpath) if isfile(join(video_folderpath, f))]
-    video_path_list = [os.path.join(video_folderpath, video_name) for video_name in video_name_list]
+    video_name = 'video1.mp4'
+    video_path = os.path.join(video_folderpath, video_name)
     
-    for l in range(len(video_path_list)):
-        video_name = video_name_list[l]
-        video_path = video_path_list[l]
-        cap = cv2.VideoCapture(video_path)
-        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        for i in range(0,length,25):
-            cap.set(1, i-1)
-            res, frame = cap.read()
-            pred_class, pred_probabilities, prediction = test_per_image(cv_to_pil(frame), model)
-            result[i] = {}
-            result[i]['CLASSES'] = pred_class
-            result[i]['PROB'] = pred_probabilities
-            result[i]['SCORE'] = prediction
-            if(i%10000 == 0):
-                print(str(i) + 'frames done!')
-
-        with open(os.path.join(args.output_path,"results_" + video_name.split('.')[0] + ".json"), 'w') as result_jsonfile:
-            json.dump(result,result_jsonfile)
+    cap = cv2.VideoCapture(video_path)
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    
+    for i in range(0,length,25):
+        cap.set(1, i-1)
+        res, frame = cap.read()
+        pred_class, pred_probabilities, prediction = test_per_image(cv_to_pil(frame), model)
+        result[i] = {}
+        result[i]['CLASSES'] = pred_class
+        result[i]['PROB'] = pred_probabilities
+        result[i]['SCORE'] = prediction
+        if(i%10000 == 0):
+            print(str(i) + 'frames done!')
+        
+    with open(os.path.join(args.output_path,"results_" + args.output_name + ".json"), 'w') as result_jsonfile:
+        json.dump(result,result_jsonfile)
     
         
 if __name__ == '__main__':

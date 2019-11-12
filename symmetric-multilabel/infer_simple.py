@@ -32,11 +32,6 @@ from os import listdir
 from os.path import isfile, join
 from PIL import Image
 import sys
-import cv2
-
-from os import listdir
-from os.path import isfile, join
-
 
 CLASSES = ['airplane', 'apple', 'backpack', 'banana', 'baseball bat', 'baseball glove', 'bear', 'bed', 'bench', 'bicycle', 'bird', 'boat', 'book', 'bottle', 'bowl', 'broccoli', 'bus', 'cake', 'car', 'carrot', 'cat', 'cell phone', 'chair', 'clock', 'couch', 'cow', 'cup', 'dining table', 'dog', 'donut', 'elephant', 'fire hydrant', 'fork', 'frisbee', 'giraffe', 'hair drier', 'handbag', 'horse', 'hot dog', 'keyboard', 'kite', 'knife', 'laptop', 'microwave', 'motorcycle', 'mouse', 'orange', 'oven', 'parking meter', 'pizza', 'potted plant', 'refrigerator', 'remote', 'sandwich', 'scissors', 'sheep', 'sink', 'skateboard', 'skis', 'snowboard', 'spoon', 'sports ball', 'stop sign', 'suitcase', 'surfboard', 'teddy bear', 'tennis racket', 'tie', 'toaster', 'toilet', 'toothbrush', 'traffic light', 'train', 'truck', 'tv', 'umbrella', 'vase', 'wine glass', 'zebra']
 
@@ -46,9 +41,11 @@ parser = argparse.ArgumentParser(description='HNH I2L Simple per image inference
 parser.add_argument('--arch', default='resnet50', type=str)
 parser.add_argument('--model', default='', type=str, metavar='PATH',help='path to latest checkpoint (default: none)')
 parser.add_argument('--image', default=None, type=str)
-parser.add_argument('--video', default='/srv/data1/ashishsingh/youtube-random')
+parser.add_argument('--dataset_path', default='/mnt/nfs/scratch1/ashishsingh/DATASETS/coco_half_label')
 parser.add_argument('--output_path', default='/mnt/nfs/scratch1/ashishsingh/DATASETS/coco_half_label')
 parser.add_argument('--output_name', default='/mnt/nfs/scratch1/ashishsingh/DATASETS/coco_half_label')
+parser.add_argument('--test_annotation', default='/mnt/nfs/scratch1/ashishsingh/DATASETS/coco_half_label')
+parser.add_argument('--complete_testset_metadata', default='/mnt/nfs/scratch1/ashishsingh/DATASETS/coco_half_label')
 parser.add_argument('--manualSeed', type=int, help='manual seed')
 parser.add_argument('--device_ids', default=[0], type=int, nargs='+',
                         help='number of epochs to change learning rate')
@@ -68,15 +65,10 @@ random.seed(args.manualSeed)
 torch.manual_seed(args.manualSeed)
 if use_cuda:
     torch.cuda.manual_seed_all(args.manualSeed)
-
-
-def cv_to_pil(cv_img):
-    cv_img2 = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-    cv_img_pil = Image.fromarray(cv_img2)
-    return cv_img_pil
     
+
 def get_model():
-    model = models.init_model(name=args.arch, num_classes=len(CLASSES), pretrained = None, use_selfatt=False, use_gpu=True)
+    model = models.init_model(name=args.arch, num_classes=len(CLASSES), pretrained = None, use_gpu=True)
     model = model.cuda()
     print("Model size: {:.3f} M".format(count_num_param(model)))
     assert os.path.isfile(args.model), 'Error: no directory found!'
@@ -87,11 +79,11 @@ def get_model():
         model.load_state_dict(checkpoint)
     return model
 
-def test_per_image(image,model):
+def test_per_image(image_name,model):
     
     classes = CLASSES
     
-    image = image.convert('RGB')
+    image = Image.open(image_name).convert('RGB')
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     
@@ -111,15 +103,12 @@ def test_per_image(image,model):
     with torch.no_grad():
         model.eval()
         prediction = model(prediction_var)
-        prediction_scores = [float(x) for x in list(np.sort(np.ravel(prediction.cpu().numpy()))[::-1])]
         pred_probabilities = F.softmax(prediction, dim=1).data.squeeze()
         class_idx = [int(((x.cpu()).numpy())) for x in list(topk(pred_probabilities,79)[1])]
-        #class_idx_scores = list(np.argsort(np.ravel(prediction.cpu().numpy()))[::-1])
         pred_class = [classes[x] for x in class_idx]
-        #pred_class_scores = [classes[x] for x in class_idx_scores]
         class_prob = [float(((x.cpu()).numpy())) for x in list(topk(pred_probabilities,79)[0])]
-        #prediction_scores = np.sort(np.ravel(prediction.cpu().numpy()))[::-1]
-     
+        prediction_scores = np.ravel(prediction.cpu().numpy()).sort() 
+    
     return pred_class, class_prob, prediction_scores
 
 
@@ -131,29 +120,33 @@ def main():
     result = {}
     model = get_model()
     
-    video_folderpath = args.video
-    video_name_list = [f for f in listdir(video_folderpath) if isfile(join(video_folderpath, f))]
-    video_path_list = [os.path.join(video_folderpath, video_name) for video_name in video_name_list]
-    
-    for l in range(len(video_path_list)):
-        video_name = video_name_list[l]
-        video_path = video_path_list[l]
-        cap = cv2.VideoCapture(video_path)
-        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-
-        for i in range(0,length,25):
-            cap.set(1, i-1)
-            res, frame = cap.read()
-            pred_class, pred_probabilities, prediction = test_per_image(cv_to_pil(frame), model)
-            result[i] = {}
-            result[i]['CLASSES'] = pred_class
-            result[i]['PROB'] = pred_probabilities
-            result[i]['SCORE'] = prediction
-            if(i%10000 == 0):
-                print(str(i) + 'frames done!')
-
-        with open(os.path.join(args.output_path,"results_" + video_name.split('.')[0] + ".json"), 'w') as result_jsonfile:
+    if args.image == None:
+        data_root = args.dataset_path
+        img_files = [os.path.join(data_root, f) for f in listdir(os.path.join(data_root)) if isfile(join(os.path.join(data_root), f))]
+    else:
+        img_files = [args.image]
+        
+    total_number_of_images = len(img_files)
+    counter = 0
+    for img_file in img_files:
+        img_id = int(img_file.split('/')[-1].split('_')[0])
+        result[img_id] = {}
+        if(counter%100 == 0):
+            print("NUMBER OF IMAGES DONE: %d/%d" %(counter, total_number_of_images) )
+        img_path = img_file
+        pred_class, pred_probabilities, prediction = test_per_image(img_path, model)
+        result[img_id]['CLASSES'] = pred_class
+        result[img_id]['PROB'] = pred_probabilities
+        result[img_id]['SCORE'] = prediction
+        counter += 1
+        
+    if args.image == None:
+        with open(os.path.join(args.output_path,"results_" + args.output_name + ".json"), 'w') as result_jsonfile:
             json.dump(result,result_jsonfile)
+    else:
+        print('PREDICTED CLASSES (Ordered): %s\n'%(pred_class))
+        print('PREDICTED CLASS PROBABILITIES (Ordered): %s\n'%(pred_probabilities))
+        print('PREDICTED CLASS SCORES (Ordered): %s\n'%(prediction))
     
         
 if __name__ == '__main__':
