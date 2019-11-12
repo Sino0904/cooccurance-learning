@@ -138,6 +138,7 @@ def main():
     for l in range(len(video_path_list)):
         video_name = video_name_list[l]
         video_path = video_path_list[l]
+        print(video_name)
         cap = cv2.VideoCapture(video_path)
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
