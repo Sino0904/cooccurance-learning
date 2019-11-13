@@ -56,8 +56,9 @@ def main():
         print("Model size: {:.3f} M".format(count_num_param(model)))
             
         # define loss function (criterion)
-        criterion = nn.MultiLabelSoftMarginLoss()
+        #criterion = nn.MultiLabelSoftMarginLoss()
         #criterion = MultiLabelSoftmaxLoss()
+        criterion = nn.BCEWithLogitsLoss()
         criterion_val = criterion
         
         # define optimizer
