@@ -108,9 +108,13 @@ class COCO2014(data.Dataset):
         self.get_anno()
         self.num_classes = len(self.cat2idx)
 
-        with open(inp_name, 'rb') as f:
-            self.inp = pickle.load(f)
-        self.inp_name = inp_name
+        if inp_name != None:
+            with open(inp_name, 'rb') as f:
+                self.inp = pickle.load(f)
+            self.inp_name = inp_name
+        else:
+            self.inp_name = None
+            self.inp = None
 
     def get_anno(self):
         list_path = os.path.join(self.root, 'data', '{}_anno.json'.format(self.phase))

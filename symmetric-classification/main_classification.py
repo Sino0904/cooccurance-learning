@@ -31,7 +31,7 @@ def main():
     args = parser.parse_args()
 
     use_gpu = torch.cuda.is_available()
-    num_classes = 79
+    num_classes = 80
     
     # define state params
     state = {'batch_size': args.batch_size, 'image_size': args.image_size, 'max_epochs': args.epochs,
@@ -48,16 +48,17 @@ def main():
         state['test'] = True
     
     if not args.test:
-        train_dataset = COCO2014(args.data, phase='train', inp_name='data/coco/coco_glove_word2vec.pkl')
-        val_dataset = COCO2014(args.data, phase='val', inp_name='data/coco/coco_glove_word2vec.pkl')
+        train_dataset = COCO2014(args.data, phase='train')
+        val_dataset = COCO2014(args.data, phase='val')
         
         print("Initializing model: {}".format(args.arch))
         model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = 'imagenet', use_gpu=use_gpu)
         print("Model size: {:.3f} M".format(count_num_param(model)))
             
         # define loss function (criterion)
-        #criterion = nn.MultiLabelSoftMarginLoss()
-        criterion = MultiLabelSoftmaxLoss()
+        criterion = nn.MultiLabelSoftMarginLoss()
+        #criterion = MultiLabelSoftmaxLoss()
+        criterion_val = criterion
         
         # define optimizer
         optimizer = torch.optim.SGD(model.parameters(),
