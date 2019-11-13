@@ -57,7 +57,12 @@ def main():
             
         # define loss function (criterion)
         #criterion = nn.MultiLabelSoftMarginLoss()
+<<<<<<< HEAD
         criterion = MultiLabelSoftmaxLoss()
+=======
+        #criterion = MultiLabelSoftmaxLoss()
+        criterion = nn.BCEWithLogitsLoss()
+>>>>>>> 792eda9f7498a1131222c14fc6461155fa1f23b2
         criterion_val = criterion
         
         # define optimizer
