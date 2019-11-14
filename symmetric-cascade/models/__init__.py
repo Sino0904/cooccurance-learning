@@ -5,9 +5,7 @@ from .resnet import *
 
 __model_factory = {
     # image classification models
-    'resnet50': resnet50,
-    'resnet50_fc512': resnet50_fc512,
-    'resnet101': resnet101
+    'resnet50': resnet50
 }
 
 def get_names():

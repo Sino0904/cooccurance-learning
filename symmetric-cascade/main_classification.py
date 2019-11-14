@@ -64,7 +64,7 @@ def main():
         criterion_val = criterion
         
         # define optimizer
-        optimizer = torch.optim.SGD(model.parameters(),
+        optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()),
                                     lr=args.lr,
                                     momentum=args.momentum,
                                     weight_decay=args.weight_decay)
