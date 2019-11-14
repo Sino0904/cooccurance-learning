@@ -1,13 +1,11 @@
 from __future__ import absolute_import
 
-from .resnet import *
 from .antisymmetric_backbone import *
 from .symmetric_backbone import *
 from .joint_classifier import *
 
 __model_factory = {
     # image classification models
-    'resnet50': resnet50,
     'resnet50_antisymm': resnet50_antisymm,
     'resnet50_symm': resnet50_symm,
     'joint_classifier': joint_classifier

@@ -8,7 +8,7 @@ import torchvision
 import torch.utils.model_zoo as model_zoo
 
 
-__all__ = ['resnet50', 'resnet50_fc512', 'resnet101']
+__all__ = ['resnet50_symm']
 
 
 model_urls = {

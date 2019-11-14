@@ -8,7 +8,7 @@ import torchvision
 import torch.utils.model_zoo as model_zoo
 
 
-__all__ = ['resnet50', 'resnet50_fc512', 'resnet101']
+__all__ = ['resnet50_antisymm']
 
 
 model_urls = {
@@ -232,7 +232,7 @@ def init_pretrained_weights_antisymm(model, model_antisymm):
     Initialize model with pretrained weights.
     Layers that don't match with pretrained layers in name or size are kept unchanged.
     """
-    pretrain_dict = torch.load(model_symm)['state_dict']
+    pretrain_dict = torch.load(model_antisymm)['state_dict']
     model_dict = model.state_dict()
     pretrain_dict = {k: v for k, v in pretrain_dict.items() if k in model_dict and model_dict[k].size() == v.size()}
     model_dict.update(pretrain_dict)

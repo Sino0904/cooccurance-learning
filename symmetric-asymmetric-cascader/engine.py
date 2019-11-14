@@ -540,7 +540,7 @@ class SymmetricMultiLabelMAPEngine(MultiLabelMAPEngine):
             #output_cpu = self.state['output'].cpu()
             self.state['loss'] = criterion(self.state['output'], target_var)
         else:
-            self.state['loss'] = criterion(self.state['output'], target_var.nonzero()[:,1])
+            self.state['loss'] = criterion(self.state['output'], target_var)
 
         if training:
             optimizer.zero_grad()

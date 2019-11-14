@@ -45,7 +45,7 @@ def argument_parser():
                         help='evaluate model on HNH I2L test set')
     parser.add_argument('--val_hnh', dest='val_hnh', action='store_true',
                         help='use HNH validation set')
-    parser.add_argument('-a', '--arch', type=str, default='resnet101')
+    parser.add_argument('-a', '--arch', type=str, default=None)
     parser.add_argument('--pretrained', type=bool, default=True)
     parser.add_argument('--checkpoint', default='', type=str, metavar='PATH',
                         help='path to save checkpoint (default: none)')

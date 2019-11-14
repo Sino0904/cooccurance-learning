@@ -53,10 +53,10 @@ def main():
         
         print("Initializing model: {}".format(args.arch))
         feature_model_antisymmetric = models.init_model(name='resnet50_antisymm', num_classes=79, pretrained = 'antisymmetric', model_load=args.load_antisymm, use_gpu=use_gpu)
-        print("Model size: {:.3f} M".format(count_num_param(model)))
+        print("Model size: {:.3f} M".format(count_num_param(feature_model_antisymmetric)))
         
-        feature_model_symmetric = models.init_model(name='resnet50_symm', num_classes=num_classes, pretrained = 'antisymmetric', use_gpu=use_gpu)
-        print("Model size: {:.3f} M".format(count_num_param(model)))
+        feature_model_symmetric = models.init_model(name='resnet50_symm', num_classes=num_classes, pretrained = 'imagenet', use_gpu=use_gpu)
+        print("Model size: {:.3f} M".format(count_num_param(feature_model_symmetric)))
         
         joint_classifier_model = models.init_model(name='joint_classifier', num_classes=num_classes)
         
