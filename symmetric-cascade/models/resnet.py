@@ -255,10 +255,10 @@ def init_pretrained_weights_antisymm(model, model_antisymm):
     model_dict.update(pretrain_dict)
     model.load_state_dict(model_dict)
     model.classifier = torch.nn.Linear(2048, 80)
-    print('Freezing antisymmetric model.')
-    for param_name, param in model.named_parameters():
-        if 'classifier' not in param_name and 'modulatedatt' not in param_name:
-            param.requires_grad = False
+#     print('Freezing antisymmetric model.')
+#     for param_name, param in model.named_parameters():
+#         if 'classifier' not in param_name and 'modulatedatt' not in param_name:
+#             param.requires_grad = False
     print("Initialized model with pretrained weights from {}".format(model_antisymm))
 
 

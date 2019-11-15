@@ -52,7 +52,7 @@ def main():
         val_dataset = COCO2014(args.data, phase='val')
         
         print("Initializing model: {}".format(args.arch))
-        model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = 'antisymmetric', model_load=args.load_antisymm, use_selfatt=True, use_gpu=use_gpu)
+        model = models.init_model(name=args.arch, num_classes=num_classes, pretrained = 'antisymmetric', model_load=args.load_antisymm, use_selfatt=False, use_gpu=use_gpu)
         print("Model size: {:.3f} M".format(count_num_param(model)))
             
         # define loss function (criterion)
